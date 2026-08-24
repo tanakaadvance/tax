@@ -21,49 +21,42 @@
     .font-noto-sans { font-family: 'Noto Sans JP', sans-serif !important; }
     
     /* 破線のノート罫線背景 */
-    .lined-bg {
-      background-image: repeating-linear-gradient(transparent, transparent 29px, #d1d5db 29px, #d1d5db 30px);
-      line-height: 30px;
-      background-attachment: local;
-      background-position: top;
-    }
-    
-    /* 打合せ内容専用の破線設定 (より原本に近づける) */
-    .meeting-bg {
-        background-image: linear-gradient(to right, black 33%, rgba(255,255,255,0) 0%);
-        background-position: bottom;
-        background-size: 3px 1px;
-        background-repeat: repeat-x;
-        line-height: 30px;
-    }
-
     .meeting-content-container {
         background-image: repeating-linear-gradient(transparent, transparent 29px, transparent 29px, transparent 30px);
     }
     .meeting-content-container p {
         margin:0;
-        border-bottom: 1px dashed #9ca3af; /* 破線 */
+        border-bottom: 1px dashed #9ca3af;
         min-height: 30px;
     }
 
+    /* 印刷時の強力な設定 */
     @media print {
-      @page { size: A4 portrait; margin: 10mm 15mm; } /* 余白を調整して1ページに収める */
-      body { margin: 0; background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      @page { size: A4 portrait; margin: 10mm; } /* 余白を10mmに固定して1ページに収める */
+      html, body { 
+        background-color: white !important; /* 確実に白にする */
+        margin: 0 !important; 
+        padding: 0 !important;
+        -webkit-print-color-adjust: exact; 
+        print-color-adjust: exact; 
+      }
       .no-print { display: none !important; }
+      
+      /* アプリ用の外側の余白・影・背景をすべて消す */
       .print-area {
         width: 100% !important;
-        height: 100% !important;
+        height: auto !important;
         max-width: none !important;
         margin: 0 !important;
         padding: 0 !important;
         box-shadow: none !important;
         border: none !important;
-        background: white !important; /* 背景を白に強制 */
+        background-color: white !important;
       }
     }
   </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 print:bg-white">
   <div id="root"></div>
 
   <script type="text/babel">
@@ -271,10 +264,10 @@
       const dateObj = new Date(formData.nextVisitYear + 2018, formData.nextVisitMonth - 1, formData.nextVisitDay);
       const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'][dateObj.getDay()];
       
-      // 改行で分割して行数を確保 (最低18行)
+      // 改行で分割して行数を確保 (打合せ内容: 最低17行)
       const contentLines = formData.meetingContent ? formData.meetingContent.split('\n') : [];
       const renderLines = [];
-      for(let i=0; i<Math.max(18, contentLines.length); i++){
+      for(let i=0; i<Math.max(17, contentLines.length); i++){
           renderLines.push(<p key={i}>{contentLines[i] || '\u00A0'}</p>);
       }
 
@@ -286,30 +279,32 @@
       }
 
       return (
-        <div className="bg-gray-200 min-h-screen p-2 sm:p-8 flex justify-center pb-24">
+        // print時は背景色やpaddingをすべて消去する
+        <div className="bg-gray-200 print:bg-white min-h-screen p-2 sm:p-8 flex justify-center pb-24 print:p-0 print:pb-0 print:block">
+          
           <div className="no-print fixed top-2 right-2 z-10">
             <button onClick={handlePrint} className="bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 font-bold">
               <IconPrinter size={20} /> PDF出力(印刷)
             </button>
           </div>
 
-          {/* 外枠となる大枠のコンテナ */}
-          <div className="print-area bg-white w-full max-w-[210mm] p-6 sm:p-10 text-gray-900 font-noto-sans relative flex flex-col box-border min-h-[297mm]">
+          {/* プレビュー表示用の枠。印刷時にはこの枠のスタイルが消え、中身だけになる */}
+          <div className="print-area bg-white w-full max-w-[210mm] print:max-w-none shadow-xl print:shadow-none p-6 sm:p-10 print:p-0 text-gray-900 font-noto-sans relative flex flex-col box-border min-h-[297mm] print:min-h-0 print:h-auto">
             
             {/* 一番外側の黒枠（原本通り） */}
-            <div className="border border-black flex-1 flex flex-col p-4 sm:p-6 bg-white">
+            <div className="border-2 border-black flex flex-col p-4 sm:p-6 bg-white h-full">
                 
                 {/* タイトル */}
                 <h1 className="text-[18px] sm:text-[22px] text-center tracking-[1em] mb-4 font-bold ml-[1em]">
                   巡回監査レポート
                 </h1>
 
-                {/* 上部テーブル (グレー背景を白に変更) */}
+                {/* 上部テーブル */}
                 <table className="w-full border-collapse border border-black mb-3 text-[13px] sm:text-[14px]">
                   <tbody>
                     <tr>
                       <td className="border border-black p-0 w-[30%] align-top">
-                        <div className="text-center border-b border-black py-0.5 tracking-widest bg-white">訪問日時</div>
+                        <div className="text-center border-b border-black py-0.5 tracking-widest bg-gray-200">訪問日時</div>
                         <div className="flex flex-col items-center justify-center py-1.5 sm:py-2 min-h-[3rem]">
                           <div className="mb-0.5">
                             R <span className="inline-block w-6 text-center">{formData.visitYear}</span>年 
@@ -322,25 +317,25 @@
                         </div>
                       </td>
                       <td className="border border-black p-0 w-[46%] align-top">
-                        <div className="text-center border-b border-black py-0.5 tracking-widest bg-white">関与先・参加者</div>
+                        <div className="text-center border-b border-black py-0.5 tracking-widest bg-gray-200">関与先・参加者</div>
                         <div className="flex flex-col justify-center px-4 py-1.5 sm:py-2 min-h-[3rem]">
                           <div className="mb-0.5 border-b border-dotted border-gray-400">関与先： <span className="font-medium">{formData.client}</span></div>
                           <div className="border-b border-dotted border-gray-400">参加者： <span className="font-medium">{formData.participants}</span></div>
                         </div>
                       </td>
                       <td className="border border-black p-0 w-[12%] align-top">
-                        <div className="text-center border-b border-black py-0.5 tracking-widest bg-white">承認印</div>
+                        <div className="text-center border-b border-black py-0.5 tracking-widest bg-gray-200">承認印</div>
                         <div className="min-h-[3rem]"></div>
                       </td>
                       <td className="border border-black p-0 w-[12%] align-top">
-                        <div className="text-center border-b border-black py-0.5 tracking-widest bg-white">担当者</div>
+                        <div className="text-center border-b border-black py-0.5 tracking-widest bg-gray-200">担当者</div>
                         <div className="min-h-[3rem] flex items-center justify-center font-medium">{formData.staff}</div>
                       </td>
                     </tr>
                   </tbody>
                 </table>
 
-                {/* 渡し書類等 (枠線を原本に近づける) */}
+                {/* 渡し書類等 */}
                 <div className="border border-black mb-3 text-[13px] sm:text-[14px] p-2">
                   <div className="font-bold mb-1">【渡し書類等】</div>
                   <div className="grid grid-cols-2 gap-x-6 gap-y-2 ml-4">
@@ -363,7 +358,7 @@
                   </div>
                 </div>
 
-                {/* 打合せ内容・ToDo（ひとつの大きな枠） */}
+                {/* 打合せ内容・ToDo */}
                 <div className="border-t border-r border-l border-black text-[13px] sm:text-[14px] flex-1 flex flex-col">
                   
                   {/* ヘッダー部分 */}
@@ -376,7 +371,7 @@
                       {renderLines}
                   </div>
 
-                  {/* 次回訪問予定日 (ここはグレーのまま、枠の太さ調整) */}
+                  {/* 次回訪問予定日 */}
                   <div className="border-t border-b border-black flex items-center">
                     <div className="font-bold bg-gray-200 px-2 py-1.5 border-r border-black flex items-center h-full w-[35%] sm:w-[28%] shrink-0">
                       【次回の訪問予定日】
@@ -394,7 +389,7 @@
                     <div className="font-bold bg-gray-200 px-2 py-1.5 border-r border-black w-[35%] sm:w-[28%] shrink-0">
                       【次回訪問時までのTo Do】
                     </div>
-                    <div className="flex-1 bg-white meeting-content-container px-2">
+                    <div className="flex-1 bg-white meeting-content-container px-2 pb-1">
                          {renderTodoLines}
                     </div>
                   </div>
@@ -423,9 +418,9 @@
       const [settings, setSettings] = useState(() => {
         const saved = localStorage.getItem('auditAppSettings');
         return saved ? JSON.parse(saved) : {
-          clients: ['医療法人 杉浦整形外科'],
-          participants: ['院長', '西田'],
-          staffs: ['西田']
+          clients: ['ここに関与先を追加してください'],
+          participants: ['ここに参加者を追加してください'],
+          staffs: ['ここに担当者を追加してください']
         };
       });
 
@@ -475,7 +470,7 @@
       };
 
       return (
-        <div className="min-h-screen bg-gray-100 flex flex-col font-sans">
+        <div className="min-h-screen bg-gray-100 print:bg-white flex flex-col font-sans">
           <main className="flex-1 overflow-y-auto">
             {activeTab === 'input' && <InputFormView formData={formData} handleChange={handleChange} settings={settings} />}
             {activeTab === 'preview' && <PreviewView formData={formData} handlePrint={handlePrint} />}
