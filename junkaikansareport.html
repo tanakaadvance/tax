@@ -20,14 +20,14 @@
     body { font-family: 'Noto Sans JP', sans-serif; }
     .font-noto-sans { font-family: 'Noto Sans JP', sans-serif !important; }
     
-    /* 破線のノート罫線背景 */
-    .meeting-content-container {
-        background-image: repeating-linear-gradient(transparent, transparent 29px, transparent 29px, transparent 30px);
-    }
+    /* 黒塗りバグを回避するため、背景グラデーションを完全に廃止し、段落ごとの下線に変更 */
     .meeting-content-container p {
-        margin:0;
-        border-bottom: 1px dashed #9ca3af;
+        margin: 0;
+        border-bottom: 1px dashed #9ca3af; /* 確実な点線 */
         min-height: 30px;
+        line-height: 29px;
+        word-break: break-all;
+        box-sizing: border-box;
     }
 
     /* 印刷時の強力な設定 */
@@ -290,12 +290,11 @@
           {/* プレビュー表示用の枠 */}
           <div className="print-area bg-white w-full max-w-[210mm] print:max-w-none shadow-xl print:shadow-none p-6 sm:p-10 print:p-0 text-gray-900 font-noto-sans relative flex flex-col box-border min-h-[297mm] print:min-h-0 print:h-auto">
             
-            {/* ★修正: タイトルを枠の外に配置 ★ */}
             <h1 className="text-[18px] sm:text-[22px] text-center tracking-[1em] mb-4 font-bold ml-[1em]">
               巡回監査レポート
             </h1>
 
-            {/* 一番外側の黒枠（タイトルより下のコンテンツを囲う） */}
+            {/* 一番外側の黒枠 */}
             <div className="border-2 border-black flex flex-col p-4 sm:p-6 bg-white flex-1">
                 
                 {/* 上部テーブル */}
@@ -365,7 +364,7 @@
                     打合せ内容（先方への質問、先方からの質問、話した内容等）
                   </div>
                   
-                  {/* 入力欄（破線罫線） */}
+                  {/* 入力欄（背景グラデーションを廃止し、pタグの下線に変更して黒塗りバグを回避） */}
                   <div className="px-2 py-0 meeting-content-container flex-1">
                       {renderLines}
                   </div>
@@ -414,7 +413,6 @@
 
       const [activeTab, setActiveTab] = useState('input');
 
-      // ★修正: v2のキーにして新しいデフォルトを強制適用
       const [settings, setSettings] = useState(() => {
         const saved = localStorage.getItem('auditAppSettings_v2');
         return saved ? JSON.parse(saved) : {
