@@ -20,25 +20,45 @@
     body { font-family: 'Noto Sans JP', sans-serif; }
     .font-noto-sans { font-family: 'Noto Sans JP', sans-serif !important; }
     
-    /* Excel風の罫線背景（30px間隔） */
+    /* 破線のノート罫線背景 */
     .lined-bg {
-      background-image: repeating-linear-gradient(transparent, transparent 29px, #9ca3af 29px, #9ca3af 30px);
+      background-image: repeating-linear-gradient(transparent, transparent 29px, #d1d5db 29px, #d1d5db 30px);
       line-height: 30px;
       background-attachment: local;
       background-position: top;
     }
+    
+    /* 打合せ内容専用の破線設定 (より原本に近づける) */
+    .meeting-bg {
+        background-image: linear-gradient(to right, black 33%, rgba(255,255,255,0) 0%);
+        background-position: bottom;
+        background-size: 3px 1px;
+        background-repeat: repeat-x;
+        line-height: 30px;
+    }
+
+    .meeting-content-container {
+        background-image: repeating-linear-gradient(transparent, transparent 29px, transparent 29px, transparent 30px);
+    }
+    .meeting-content-container p {
+        margin:0;
+        border-bottom: 1px dashed #9ca3af; /* 破線 */
+        min-height: 30px;
+    }
 
     @media print {
-      @page { size: A4 portrait; margin: 12mm; }
+      @page { size: A4 portrait; margin: 10mm 15mm; } /* 余白を調整して1ページに収める */
       body { margin: 0; background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .no-print { display: none !important; }
       .print-area {
         width: 100% !important;
+        height: 100% !important;
         max-width: none !important;
         margin: 0 !important;
         padding: 0 !important;
         box-shadow: none !important;
         border: none !important;
+        background: white !important; /* 背景を白に強制 */
       }
     }
   </style>
@@ -250,6 +270,20 @@
     const PreviewView = ({ formData, handlePrint }) => {
       const dateObj = new Date(formData.nextVisitYear + 2018, formData.nextVisitMonth - 1, formData.nextVisitDay);
       const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'][dateObj.getDay()];
+      
+      // 改行で分割して行数を確保 (最低18行)
+      const contentLines = formData.meetingContent ? formData.meetingContent.split('\n') : [];
+      const renderLines = [];
+      for(let i=0; i<Math.max(18, contentLines.length); i++){
+          renderLines.push(<p key={i}>{contentLines[i] || '\u00A0'}</p>);
+      }
+
+      // ToDoも改行で分割して行数を確保 (最低3行)
+      const todoLines = formData.todo ? formData.todo.split('\n') : [];
+      const renderTodoLines = [];
+      for(let i=0; i<Math.max(3, todoLines.length); i++){
+          renderTodoLines.push(<p key={`todo-${i}`}>{todoLines[i] || '\u00A0'}</p>);
+      }
 
       return (
         <div className="bg-gray-200 min-h-screen p-2 sm:p-8 flex justify-center pb-24">
@@ -259,127 +293,118 @@
             </button>
           </div>
 
-          <div className="print-area bg-white w-full max-w-[210mm] shadow-xl p-6 sm:p-10 text-gray-900 font-noto-sans relative flex flex-col box-border min-h-[297mm]">
+          {/* 外枠となる大枠のコンテナ */}
+          <div className="print-area bg-white w-full max-w-[210mm] p-6 sm:p-10 text-gray-900 font-noto-sans relative flex flex-col box-border min-h-[297mm]">
             
-            {/* タイトル */}
-            <h1 className="text-[18px] sm:text-[22px] text-center tracking-[1em] mb-4 font-bold ml-[1em]">
-              巡回監査レポート
-            </h1>
+            {/* 一番外側の黒枠（原本通り） */}
+            <div className="border border-black flex-1 flex flex-col p-4 sm:p-6 bg-white">
+                
+                {/* タイトル */}
+                <h1 className="text-[18px] sm:text-[22px] text-center tracking-[1em] mb-4 font-bold ml-[1em]">
+                  巡回監査レポート
+                </h1>
 
-            {/* 上部テーブル */}
-            <table className="w-full border-collapse border border-black mb-3 text-[13px] sm:text-[14px]">
-              <tbody>
-                <tr>
-                  <td className="border border-black p-0 w-[30%] align-top">
-                    {/* 修正1: 項目名をグレー化 */}
-                    <div className="text-center border-b border-black py-0.5 bg-gray-200 tracking-widest">訪問日時</div>
-                    {/* 修正2: 行の幅（高さ）を狭めました */}
-                    <div className="flex flex-col items-center justify-center py-1.5 sm:py-2 min-h-[3rem]">
-                      <div className="mb-0.5">
-                        R <span className="inline-block w-6 text-center">{formData.visitYear}</span>年 
-                        <span className="inline-block w-6 text-center">{formData.visitMonth}</span>月 
-                        <span className="inline-block w-6 text-center">{formData.visitDay}</span>日
-                      </div>
-                      <div>
-                        {formData.startTimeHour} : {formData.startTimeMinute} ～ {formData.endTimeHour} : {formData.endTimeMinute}
-                      </div>
+                {/* 上部テーブル (グレー背景を白に変更) */}
+                <table className="w-full border-collapse border border-black mb-3 text-[13px] sm:text-[14px]">
+                  <tbody>
+                    <tr>
+                      <td className="border border-black p-0 w-[30%] align-top">
+                        <div className="text-center border-b border-black py-0.5 tracking-widest bg-white">訪問日時</div>
+                        <div className="flex flex-col items-center justify-center py-1.5 sm:py-2 min-h-[3rem]">
+                          <div className="mb-0.5">
+                            R <span className="inline-block w-6 text-center">{formData.visitYear}</span>年 
+                            <span className="inline-block w-6 text-center">{formData.visitMonth}</span>月 
+                            <span className="inline-block w-6 text-center">{formData.visitDay}</span>日
+                          </div>
+                          <div>
+                            {formData.startTimeHour} : {formData.startTimeMinute} ～ {formData.endTimeHour} : {formData.endTimeMinute}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="border border-black p-0 w-[46%] align-top">
+                        <div className="text-center border-b border-black py-0.5 tracking-widest bg-white">関与先・参加者</div>
+                        <div className="flex flex-col justify-center px-4 py-1.5 sm:py-2 min-h-[3rem]">
+                          <div className="mb-0.5 border-b border-dotted border-gray-400">関与先： <span className="font-medium">{formData.client}</span></div>
+                          <div className="border-b border-dotted border-gray-400">参加者： <span className="font-medium">{formData.participants}</span></div>
+                        </div>
+                      </td>
+                      <td className="border border-black p-0 w-[12%] align-top">
+                        <div className="text-center border-b border-black py-0.5 tracking-widest bg-white">承認印</div>
+                        <div className="min-h-[3rem]"></div>
+                      </td>
+                      <td className="border border-black p-0 w-[12%] align-top">
+                        <div className="text-center border-b border-black py-0.5 tracking-widest bg-white">担当者</div>
+                        <div className="min-h-[3rem] flex items-center justify-center font-medium">{formData.staff}</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                {/* 渡し書類等 (枠線を原本に近づける) */}
+                <div className="border border-black mb-3 text-[13px] sm:text-[14px] p-2">
+                  <div className="font-bold mb-1">【渡し書類等】</div>
+                  <div className="grid grid-cols-2 gap-x-6 gap-y-2 ml-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[16px] leading-none">{formData.doc1Check ? '☑' : '☐'}</span>
+                      <span className="whitespace-nowrap">試算表（ <span className="inline-block w-4 text-center">{formData.doc1Year}</span> 年 <span className="inline-block w-4 text-center">{formData.doc1Month}</span> 月分 ）</span>
                     </div>
-                  </td>
-                  <td className="border border-black p-0 w-[46%] align-top">
-                    {/* 修正1: 項目名をグレー化 */}
-                    <div className="text-center border-b border-black py-0.5 bg-gray-200 tracking-widest">関与先・参加者</div>
-                    {/* 修正2: 行の幅（高さ）を狭めました */}
-                    <div className="flex flex-col justify-center px-4 py-1.5 sm:py-2 min-h-[3rem]">
-                      <div className="mb-0.5">関与先： <span className="font-medium">{formData.client}</span></div>
-                      <div>参加者： <span className="font-medium">{formData.participants}</span></div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[16px] leading-none">{formData.doc2Check ? '☑' : '☐'}</span>
+                      <div className={`flex-1 truncate ${formData.doc2Text ? 'border-b border-black' : 'border-b border-gray-400 h-[14px]'}`}>{formData.doc2Text}</div>
                     </div>
-                  </td>
-                  <td className="border border-black p-0 w-[12%] align-top">
-                    {/* 修正1: 項目名をグレー化 */}
-                    <div className="text-center border-b border-black py-0.5 bg-gray-200 tracking-widest">承認印</div>
-                    <div className="min-h-[3rem]"></div>
-                  </td>
-                  <td className="border border-black p-0 w-[12%] align-top">
-                    {/* 修正1: 項目名をグレー化 */}
-                    <div className="text-center border-b border-black py-0.5 bg-gray-200 tracking-widest">担当者</div>
-                    {/* 修正2: 行の幅（高さ）を狭めました */}
-                    <div className="min-h-[3rem] flex items-center justify-center font-medium">{formData.staff}</div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            {/* 渡し書類等 */}
-            <div className="border border-black mb-3 text-[13px] sm:text-[14px] p-2">
-              <div className="font-bold mb-1">【渡し書類等】</div>
-              {/* 修正3: 2列のグリッドにしてぴったり4項目に修正 */}
-              <div className="grid grid-cols-2 gap-x-6 gap-y-2 ml-4">
-                {/* 1項目め (試算表) */}
-                <div className="flex items-center gap-2">
-                  <span className="text-[16px] leading-none">{formData.doc1Check ? '☑' : '☐'}</span>
-                  <span className="whitespace-nowrap">試算表（ <span className="inline-block w-4 text-center">{formData.doc1Year}</span> 年 <span className="inline-block w-4 text-center">{formData.doc1Month}</span> 月分 ）</span>
-                </div>
-                {/* 2項目め */}
-                <div className="flex items-center gap-2">
-                  <span className="text-[16px] leading-none">{formData.doc2Check ? '☑' : '☐'}</span>
-                  <div className={`flex-1 truncate ${formData.doc2Text ? 'border-b border-black' : 'border-b border-gray-400 h-[14px]'}`}>{formData.doc2Text}</div>
-                </div>
-                {/* 3項目め */}
-                <div className="flex items-center gap-2">
-                  <span className="text-[16px] leading-none">{formData.doc3Check ? '☑' : '☐'}</span>
-                  <div className={`flex-1 truncate ${formData.doc3Text ? 'border-b border-black' : 'border-b border-gray-400 h-[14px]'}`}>{formData.doc3Text}</div>
-                </div>
-                {/* 4項目め */}
-                <div className="flex items-center gap-2">
-                  <span className="text-[16px] leading-none">{formData.doc4Check ? '☑' : '☐'}</span>
-                  <div className={`flex-1 truncate ${formData.doc4Text ? 'border-b border-black' : 'border-b border-gray-400 h-[14px]'}`}>{formData.doc4Text}</div>
-                </div>
-              </div>
-            </div>
-
-            {/* 打合せ内容・ToDo（ひとつの大きな枠） */}
-            <div className="border border-black text-[13px] sm:text-[14px] flex-1 flex flex-col">
-              
-              {/* ヘッダー部分 */}
-              <div className="text-center py-1 bg-gray-200 border-b border-black font-medium tracking-wide">
-                打合せ内容（先方への質問、先方からの質問、話した内容等）
-              </div>
-              
-              {/* 入力欄（ノート罫線） */}
-              <div className="px-2 py-0 h-[510px] sm:h-[600px] lined-bg whitespace-pre-wrap break-words">
-                {formData.meetingContent}
-              </div>
-
-              {/* 次回訪問予定日 */}
-              {/* 修正4: 文字部分のみグレー化、横は白 */}
-              <div className="border-t border-black flex items-center">
-                <div className="font-bold bg-gray-200 px-2 py-1.5 border-r border-black h-full flex items-center w-[35%] sm:w-[28%] shrink-0">
-                  【次回の訪問予定日】
-                </div>
-                <div className="px-2 py-1.5 flex-1 bg-white">
-                  R <span className="inline-block w-6 text-center">{formData.nextVisitYear}</span> 年 
-                  <span className="inline-block w-6 text-center">{formData.nextVisitMonth}</span> 月 
-                  <span className="inline-block w-6 text-center">{formData.nextVisitDay}</span> 日（{dayOfWeek}）
-                  <span className="ml-4">{formData.nextVisitTimeHour} : {formData.nextVisitTimeMinute} ～</span>
-                </div>
-              </div>
-
-              {/* ToDo */}
-              {/* 修正5: 文字部分のみグレー化、横は白 */}
-              <div className="border-t border-black flex flex-1 min-h-[120px]">
-                <div className="font-bold bg-gray-200 px-2 py-1.5 border-r border-black w-[35%] sm:w-[28%] shrink-0">
-                  【次回訪問時までのTo Do】
-                </div>
-                <div className="flex-1 bg-white">
-                  <div className="lined-bg whitespace-pre-wrap px-2 h-full min-h-[90px]">
-                    {formData.todo}
+                    <div className="flex items-center gap-2">
+                      <span className="text-[16px] leading-none">{formData.doc3Check ? '☑' : '☐'}</span>
+                      <div className={`flex-1 truncate ${formData.doc3Text ? 'border-b border-black' : 'border-b border-gray-400 h-[14px]'}`}>{formData.doc3Text}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[16px] leading-none">{formData.doc4Check ? '☑' : '☐'}</span>
+                      <div className={`flex-1 truncate ${formData.doc4Text ? 'border-b border-black' : 'border-b border-gray-400 h-[14px]'}`}>{formData.doc4Text}</div>
+                    </div>
                   </div>
                 </div>
-              </div>
+
+                {/* 打合せ内容・ToDo（ひとつの大きな枠） */}
+                <div className="border-t border-r border-l border-black text-[13px] sm:text-[14px] flex-1 flex flex-col">
+                  
+                  {/* ヘッダー部分 */}
+                  <div className="text-center py-1 bg-gray-200 border-b border-black font-medium tracking-wide">
+                    打合せ内容（先方への質問、先方からの質問、話した内容等）
+                  </div>
+                  
+                  {/* 入力欄（破線罫線） */}
+                  <div className="px-2 py-0 meeting-content-container flex-1">
+                      {renderLines}
+                  </div>
+
+                  {/* 次回訪問予定日 (ここはグレーのまま、枠の太さ調整) */}
+                  <div className="border-t border-b border-black flex items-center">
+                    <div className="font-bold bg-gray-200 px-2 py-1.5 border-r border-black flex items-center h-full w-[35%] sm:w-[28%] shrink-0">
+                      【次回の訪問予定日】
+                    </div>
+                    <div className="px-2 py-1.5 flex-1 bg-white">
+                      R <span className="inline-block w-6 text-center">{formData.nextVisitYear}</span> 年 
+                      <span className="inline-block w-6 text-center">{formData.nextVisitMonth}</span> 月 
+                      <span className="inline-block w-6 text-center">{formData.nextVisitDay}</span> 日（{dayOfWeek}）
+                      <span className="ml-4">{formData.nextVisitTimeHour} : {formData.nextVisitTimeMinute} ～</span>
+                    </div>
+                  </div>
+
+                  {/* ToDo */}
+                  <div className="flex border-b border-black flex-none min-h-[90px]">
+                    <div className="font-bold bg-gray-200 px-2 py-1.5 border-r border-black w-[35%] sm:w-[28%] shrink-0">
+                      【次回訪問時までのTo Do】
+                    </div>
+                    <div className="flex-1 bg-white meeting-content-container px-2">
+                         {renderTodoLines}
+                    </div>
+                  </div>
+                </div>
+
             </div>
+            {/* 黒枠終わり */}
 
             {/* フッター */}
-            <div className="text-center mt-3 text-[14px] sm:text-[15px] text-gray-800 tracking-widest font-medium">
+            <div className="text-center mt-2 text-[14px] sm:text-[15px] text-gray-800 tracking-widest font-medium">
               税理士法人アドヴァンス
             </div>
             
