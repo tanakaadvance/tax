@@ -20,14 +20,16 @@
     body { font-family: 'Noto Sans JP', sans-serif; }
     .font-noto-sans { font-family: 'Noto Sans JP', sans-serif !important; }
     
+    /* Excel風の罫線背景（30px間隔） */
     .lined-bg {
-      background-image: repeating-linear-gradient(transparent, transparent 31px, #94a3b8 31px, #94a3b8 32px);
-      line-height: 32px;
+      background-image: repeating-linear-gradient(transparent, transparent 29px, #9ca3af 29px, #9ca3af 30px);
+      line-height: 30px;
       background-attachment: local;
+      background-position: top;
     }
 
     @media print {
-      @page { size: A4 portrait; margin: 10mm; }
+      @page { size: A4 portrait; margin: 12mm; }
       body { margin: 0; background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .no-print { display: none !important; }
       .print-area {
@@ -198,7 +200,7 @@
 
         <section className="bg-white p-4 rounded-lg shadow space-y-2">
           <h3 className="font-bold text-gray-700 border-b pb-2">打合せ内容</h3>
-          <p className="text-xs text-gray-500">先方への質問、先方からの質問、話した内容等 (最大26行目安)</p>
+          <p className="text-xs text-gray-500">先方への質問、先方からの質問、話した内容等</p>
           <textarea 
             name="meetingContent" 
             value={formData.meetingContent} 
@@ -244,7 +246,7 @@
       </div>
     );
 
-    // --- コンポーネント: プレビュー画面 ---
+    // --- コンポーネント: プレビュー画面（Excel完全再現レイアウト） ---
     const PreviewView = ({ formData, handlePrint }) => {
       const dateObj = new Date(formData.nextVisitYear + 2018, formData.nextVisitMonth - 1, formData.nextVisitDay);
       const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'][dateObj.getDay()];
@@ -257,116 +259,115 @@
             </button>
           </div>
 
-          <div className="print-area bg-white w-full max-w-[210mm] shadow-xl p-4 sm:p-8 text-gray-900 leading-tight font-noto-sans relative">
+          <div className="print-area bg-white w-full max-w-[210mm] shadow-xl p-6 sm:p-10 text-gray-900 font-noto-sans relative flex flex-col box-border min-h-[297mm]">
             
-            <h1 className="text-2xl text-center tracking-[1em] mb-4 font-bold ml-[1em]">巡回監査レポート</h1>
+            {/* タイトル */}
+            <h1 className="text-[18px] sm:text-[22px] text-center tracking-[1em] mb-4 font-bold ml-[1em]">
+              巡回監査レポート
+            </h1>
 
-            <table className="w-full border-collapse border border-black mb-4 text-[13px] sm:text-[15px]">
+            {/* 上部テーブル */}
+            <table className="w-full border-collapse border border-black mb-3 text-[13px] sm:text-[14px]">
               <tbody>
                 <tr>
-                  <td className="border border-black p-2 w-[35%] align-top">
-                    <div className="text-center border-b border-gray-400 pb-1 mb-2 tracking-widest">訪問日時</div>
-                    <div className="flex justify-center items-center gap-1 sm:gap-2 mb-2 font-medium">
-                      <span>R</span>
-                      <span className="w-6 text-center">{formData.visitYear}</span><span>年</span>
-                      <span className="w-6 text-center">{formData.visitMonth}</span><span>月</span>
-                      <span className="w-6 text-center">{formData.visitDay}</span><span>日</span>
-                    </div>
-                    <div className="text-center font-medium">
-                      {formData.startTimeHour} : {formData.startTimeMinute} 〜 {formData.endTimeHour} : {formData.endTimeMinute}
-                    </div>
-                  </td>
-                  <td className="border border-black p-2 align-top w-[45%]">
-                    <div className="text-center border-b border-gray-400 pb-1 mb-2 tracking-widest">関与先・参加者</div>
-                    <div className="mb-2">関与先： <span className="font-medium">{formData.client}</span></div>
-                    <div>参加者： <span className="font-medium">{formData.participants}</span></div>
-                  </td>
-                  <td className="border border-black p-0 w-[10%] align-top text-center">
-                    <div className="flex text-[10px] border-b border-black">
-                      <div className="w-1/2 border-r border-black py-0.5">承認</div>
-                      <div className="w-1/2 py-0.5">検</div>
-                    </div>
-                    <div className="flex h-[3.5rem]">
-                      <div className="w-1/2 border-r border-black"></div>
-                      <div className="w-1/2"></div>
+                  <td className="border border-black p-0 w-[30%] align-top">
+                    <div className="text-center border-b border-black py-1 tracking-widest">訪問日時</div>
+                    <div className="flex flex-col items-center justify-center h-[3.5rem] sm:h-[4.5rem]">
+                      <div className="mb-1">
+                        R <span className="inline-block w-6 text-center">{formData.visitYear}</span>年 
+                        <span className="inline-block w-6 text-center">{formData.visitMonth}</span>月 
+                        <span className="inline-block w-6 text-center">{formData.visitDay}</span>日
+                      </div>
+                      <div>
+                        {formData.startTimeHour} : {formData.startTimeMinute} ～ {formData.endTimeHour} : {formData.endTimeMinute}
+                      </div>
                     </div>
                   </td>
-                  <td className="border border-black p-0 w-[10%] align-top text-center">
-                    <div className="text-[10px] border-b border-black py-0.5">担当者</div>
-                    <div className="h-[3.5rem] flex items-center justify-center font-medium">
-                      {formData.staff}
+                  <td className="border border-black p-0 w-[46%] align-top">
+                    <div className="text-center border-b border-black py-1 tracking-widest">関与先・参加者</div>
+                    <div className="h-[3.5rem] sm:h-[4.5rem] flex flex-col justify-center px-4">
+                      <div className="mb-1">関与先： <span className="font-medium">{formData.client}</span></div>
+                      <div>参加者： <span className="font-medium">{formData.participants}</span></div>
                     </div>
+                  </td>
+                  <td className="border border-black p-0 w-[12%] align-top">
+                    <div className="text-center border-b border-black py-1 tracking-widest">承認印</div>
+                    <div className="h-[3.5rem] sm:h-[4.5rem]"></div>
+                  </td>
+                  <td className="border border-black p-0 w-[12%] align-top">
+                    <div className="text-center border-b border-black py-1 tracking-widest">担当者</div>
+                    <div className="h-[3.5rem] sm:h-[4.5rem] flex items-center justify-center font-medium">{formData.staff}</div>
                   </td>
                 </tr>
               </tbody>
             </table>
 
-            <div className="border border-black p-2 mb-4 text-[13px] sm:text-[15px]">
-              <div className="mb-2 font-bold">【渡し書類等】</div>
-              <div className="pl-4 sm:pl-8 space-y-1">
-                <div className="flex items-center gap-2 sm:gap-4">
-                  <div className="flex items-center gap-2 border-b border-gray-600 pb-0.5 w-[220px] sm:w-[280px]">
-                    <span className="text-lg leading-none">{formData.doc1Check ? '☑' : '☐'}</span>
-                    <span>試算表（ <span className="inline-block w-6 text-center">{formData.doc1Year}</span> 年 <span className="inline-block w-4 text-center">{formData.doc1Month}</span> 月分 ）</span>
+            {/* 渡し書類等 */}
+            <div className="border border-black mb-3 text-[13px] sm:text-[14px] p-2">
+              <div className="font-bold mb-1">【渡し書類等】</div>
+              <div className="ml-4 space-y-[4px]">
+                {/* 1項目め (試算表) */}
+                <div className="flex items-center">
+                  <div className="w-[60%] flex items-center gap-2">
+                    <span className="text-[16px] leading-none">{formData.doc1Check ? '☑' : '☐'}</span>
+                    <span>試算表（ <span className="inline-block w-6 text-center">{formData.doc1Year}</span> 年 <span className="inline-block w-6 text-center">{formData.doc1Month}</span> 月分 ）</span>
                   </div>
-                  <div className="flex items-center gap-2 border-b border-gray-600 pb-0.5 w-16 sm:w-24">
-                    <span className="text-lg leading-none">☐</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 sm:gap-4">
-                  <div className="flex items-center gap-2 border-b border-gray-600 pb-0.5 w-[220px] sm:w-[280px]">
-                    <span className="text-lg leading-none">{formData.doc2Check ? '☑' : '☐'}</span>
-                    <span className="truncate min-h-[1.5em]">{formData.doc2Text}</span>
-                  </div>
-                  <div className="flex items-center gap-2 border-b border-gray-600 pb-0.5 w-16 sm:w-24">
-                    <span className="text-lg leading-none">☐</span>
+                  <div className="w-[40%] flex items-center gap-2">
+                    <span className="text-[16px] leading-none">☐</span>
+                    <div className="border-b border-gray-400 w-full h-[14px] mr-8"></div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 sm:gap-4">
-                  <div className="flex items-center gap-2 border-b border-gray-600 pb-0.5 w-[220px] sm:w-[280px]">
-                    <span className="text-lg leading-none">{formData.doc3Check ? '☑' : '☐'}</span>
-                    <span className="truncate min-h-[1.5em]">{formData.doc3Text}</span>
+                {/* 2〜4項目め (自由入力枠) */}
+                {[2, 3, 4].map(num => (
+                  <div key={num} className="flex items-center">
+                    <div className="w-[60%] flex items-center gap-2">
+                      <span className="text-[16px] leading-none">{formData[`doc${num}Check`] ? '☑' : '☐'}</span>
+                      <div className={`w-[250px] truncate ${formData[`doc${num}Text`] ? 'border-b border-black' : ''}`}>{formData[`doc${num}Text`]}</div>
+                    </div>
+                    <div className="w-[40%] flex items-center gap-2">
+                      <span className="text-[16px] leading-none">☐</span>
+                      <div className="border-b border-gray-400 w-full h-[14px] mr-8"></div>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2 sm:gap-4">
-                  <div className="flex items-center gap-2 border-b border-gray-600 pb-0.5 w-[220px] sm:w-[280px]">
-                    <span className="text-lg leading-none">{formData.doc4Check ? '☑' : '☐'}</span>
-                    <span className="truncate min-h-[1.5em]">{formData.doc4Text}</span>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
 
-            <div className="border border-black mb-4">
-              <div className="text-center text-[12px] sm:text-[14px] py-1 border-b border-black font-medium tracking-wide bg-gray-100/50">
+            {/* 打合せ内容・ToDo（ひとつの大きな枠） */}
+            <div className="border border-black text-[13px] sm:text-[14px] flex-1 flex flex-col">
+              
+              {/* ヘッダー部分（グレー背景） */}
+              <div className="text-center py-1 bg-[#f3f4f6] border-b border-black font-medium tracking-wide">
                 打合せ内容（先方への質問、先方からの質問、話した内容等）
               </div>
-              <div className="p-2 sm:p-4 min-h-[600px] sm:min-h-[700px] lined-bg text-[14px] sm:text-[16px] whitespace-pre-wrap break-words leading-[32px]">
+              
+              {/* 入力欄（ノート罫線） */}
+              <div className="px-2 py-0 h-[510px] sm:h-[600px] lined-bg whitespace-pre-wrap break-words">
                 {formData.meetingContent}
+              </div>
+
+              {/* 次回訪問予定日 */}
+              <div className="border-t border-black p-2 flex items-center">
+                <span className="font-bold mr-4">【次回の訪問予定日】</span>
+                <span>
+                  R <span className="inline-block w-6 text-center">{formData.nextVisitYear}</span> 年 
+                  <span className="inline-block w-6 text-center">{formData.nextVisitMonth}</span> 月 
+                  <span className="inline-block w-6 text-center">{formData.nextVisitDay}</span> 日（{dayOfWeek}）
+                </span>
+                <span className="ml-4">{formData.nextVisitTimeHour} : {formData.nextVisitTimeMinute} ～</span>
+              </div>
+
+              {/* ToDo */}
+              <div className="border-t border-black p-2 flex-1 min-h-[140px]">
+                <div className="font-bold mb-1">【次回訪問時までのTo Do】</div>
+                <div className="lined-bg whitespace-pre-wrap px-2 h-full min-h-[100px]">
+                  {formData.todo}
+                </div>
               </div>
             </div>
 
-            <table className="w-full border-collapse border border-black text-[13px] sm:text-[15px]">
-              <tbody>
-                <tr>
-                  <td className="border border-black p-2 w-[30%] sm:w-[25%] font-bold">【次回の訪問予定日】</td>
-                  <td className="border border-black p-2 font-medium">
-                    R <span className="inline-block w-6 text-center">{formData.nextVisitYear}</span> 年 
-                    <span className="inline-block w-6 text-center">{formData.nextVisitMonth}</span> 月 
-                    <span className="inline-block w-6 text-center">{formData.nextVisitDay}</span> 日（{dayOfWeek}）
-                    <span className="ml-4">{formData.nextVisitTimeHour} : {formData.nextVisitTimeMinute} 〜</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="border border-black p-2 align-top font-bold">【次回訪問時までのTo Do】</td>
-                  <td className="border border-black p-2 min-h-[80px] align-top whitespace-pre-wrap">
-                    {formData.todo}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            <div className="text-center mt-4 text-[14px] sm:text-[16px] text-gray-700 tracking-widest font-medium">
+            {/* フッター */}
+            <div className="text-center mt-3 text-[14px] sm:text-[15px] text-gray-800 tracking-widest">
               税理士法人アドヴァンス
             </div>
             
