@@ -32,9 +32,9 @@
 
     /* 印刷時の強力な設定 */
     @media print {
-      @page { size: A4 portrait; margin: 10mm; } /* 余白を10mmに固定して1ページに収める */
+      @page { size: A4 portrait; margin: 10mm; }
       html, body { 
-        background-color: white !important; /* 確実に白にする */
+        background-color: white !important; 
         margin: 0 !important; 
         padding: 0 !important;
         -webkit-print-color-adjust: exact; 
@@ -279,7 +279,6 @@
       }
 
       return (
-        // print時は背景色やpaddingをすべて消去する
         <div className="bg-gray-200 print:bg-white min-h-screen p-2 sm:p-8 flex justify-center pb-24 print:p-0 print:pb-0 print:block">
           
           <div className="no-print fixed top-2 right-2 z-10">
@@ -288,17 +287,17 @@
             </button>
           </div>
 
-          {/* プレビュー表示用の枠。印刷時にはこの枠のスタイルが消え、中身だけになる */}
+          {/* プレビュー表示用の枠 */}
           <div className="print-area bg-white w-full max-w-[210mm] print:max-w-none shadow-xl print:shadow-none p-6 sm:p-10 print:p-0 text-gray-900 font-noto-sans relative flex flex-col box-border min-h-[297mm] print:min-h-0 print:h-auto">
             
-            {/* 一番外側の黒枠（原本通り） */}
-            <div className="border-2 border-black flex flex-col p-4 sm:p-6 bg-white h-full">
-                
-                {/* タイトル */}
-                <h1 className="text-[18px] sm:text-[22px] text-center tracking-[1em] mb-4 font-bold ml-[1em]">
-                  巡回監査レポート
-                </h1>
+            {/* ★修正: タイトルを枠の外に配置 ★ */}
+            <h1 className="text-[18px] sm:text-[22px] text-center tracking-[1em] mb-4 font-bold ml-[1em]">
+              巡回監査レポート
+            </h1>
 
+            {/* 一番外側の黒枠（タイトルより下のコンテンツを囲う） */}
+            <div className="border-2 border-black flex flex-col p-4 sm:p-6 bg-white flex-1">
+                
                 {/* 上部テーブル */}
                 <table className="w-full border-collapse border border-black mb-3 text-[13px] sm:text-[14px]">
                   <tbody>
@@ -415,8 +414,9 @@
 
       const [activeTab, setActiveTab] = useState('input');
 
+      // ★修正: v2のキーにして新しいデフォルトを強制適用
       const [settings, setSettings] = useState(() => {
-        const saved = localStorage.getItem('auditAppSettings');
+        const saved = localStorage.getItem('auditAppSettings_v2');
         return saved ? JSON.parse(saved) : {
           clients: ['ここに関与先を追加してください'],
           participants: ['ここに参加者を追加してください'],
@@ -454,7 +454,7 @@
       });
 
       useEffect(() => {
-        localStorage.setItem('auditAppSettings', JSON.stringify(settings));
+        localStorage.setItem('auditAppSettings_v2', JSON.stringify(settings));
       }, [settings]);
 
       const handleChange = (e) => {
